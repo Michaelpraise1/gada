@@ -119,7 +119,9 @@ export default function CartPage() {
             <span className="text-[14px] text-gray-600">Subtotal</span>
             <span className="text-[15px] text-gray-900 font-bold">{formatPrice(cartTotal)}</span>
           </div>
-          <button className="w-full py-4 bg-[#6A42E4] hover:bg-[#5833cc] text-white rounded-[14px] text-[14.5px] font-medium transition-colors shadow-sm">
+          <button 
+            onClick={() => router.push('/checkout')}
+            className="w-full py-4 bg-[#6A42E4] hover:bg-[#5833cc] text-white rounded-[14px] text-[14.5px] font-medium transition-colors shadow-sm">
             Checkout
           </button>
           <button
