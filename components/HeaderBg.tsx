@@ -2,12 +2,21 @@ import React from 'react'
 import Image from 'next/image'
 import Container from './Container';
 
-const HeaderBg = () => {
+interface Props {
+  imageUrl?: string;
+}
+
+const HeaderBg = ({ imageUrl = "/headerbg.png" }: Props) => {
   return (
-    <Image src="/headerbg.png" alt="Header Background" fill className="object-cover object-center -z-10 max-h-[35vh] absolute w-fit" />
-
-
-
+    <div className="relative w-full max-w-7xl mx-auto h-[25vh] sm:h-[35vh]">
+      <Image 
+        src={imageUrl} 
+        alt="Header Background" 
+        fill 
+        priority
+        className="object-cover object-center -z-10 absolute w-full rounded-b-2xl" 
+      />
+    </div>
   )
 }
 

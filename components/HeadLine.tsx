@@ -3,25 +3,35 @@ import React from 'react';
 import Title from './ui/text';
 import SocialMedia from './SocialMedia';
 
-const HeadLine = () => {
+interface Props {
+  title?: string;
+  description?: string;
+  logoUrl?: string;
+}
+
+const HeadLine = ({ 
+  title = "Daniels Place", 
+  description = "Discover a variety of products tailored to your needs. Shop digital goods, exclusive services, and more. Seamless browsing and secure checkout guaranteed.",
+  logoUrl = "/Logo.png"
+}: Props) => {
   return (
-    <div className="flex flex-col items-start justify-center text-center max-w-3xl mx-auto py-12 px-1 ml-3">
-      <div className="w-28 h-28 relative mb-6">
+    <div className="flex flex-col items-start justify-center max-w-3xl mx-auto pb-10 px-1 ml-2 relative z-10">
+      <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] relative mb-4 -mt-12 sm:-mt-16 border-[4px] border-white rounded-full bg-white shadow-sm shrink-0">
         <Image
-          src="/Logo.png"
-          alt="Daniels Place Logo"
+          src={logoUrl}
+          alt={title}
           fill
           className="object-cover rounded-full"
           priority
         />
       </div>
 
-      <Title className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-foreground">
-        Daniels Place
+      <Title className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-foreground text-left">
+        {title}
       </Title>
 
       <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-2xl text-left">
-        Discover a variety of products tailored to your needs. Shop digital goods, exclusive services, and more. Seamless browsing and secure checkout guaranteed.
+        {description}
       </p>
       <SocialMedia className='mt-3'/>
     </div>

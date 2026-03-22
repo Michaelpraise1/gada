@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type Currency = 'USD' | 'NGN' | 'GBP' | 'CAD' | 'GHS' | 'KES' | 'AEF';
 
-export const exchangeRates: Record<Currency, number> = {
+export const fallbackRates: Record<Currency, number> = {
   NGN: 1,
   USD: 1 / 1400,
   GBP: 1 / 1800,
@@ -49,6 +49,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [currency, setCurrencyState] = useState<Currency>('USD');
   const [isMounted, setIsMounted] = useState(false);
+  const [liveRates, setLiveRates] = useState<Record<Currency, number>>(fallbackRates);
+
+  // Poll exactly once on mount to get the blazing-fast live rates
+  useEffect(() => {
+    async function fetchLiveRates() {
+      try {
+        const response = await fetch('https://v6.exchangerate-api.com/v6/b7b496a8a418a2048c4060fc/latest/NGN');
+        const data = await response.json();
+        if (data && data.result === "success" && data.conversion_rates) {
+          setLiveRates({
+            NGN: data.conversion_rates.NGN || 1,
+            USD: data.conversion_rates.USD || fallbackRates.USD,
+            GBP: data.conversion_rates.GBP || fallbackRates.GBP,
+            CAD: data.conversion_rates.CAD || fallbackRates.CAD,
+            GHS: data.conversion_rates.GHS || fallbackRates.GHS,
+            KES: data.conversion_rates.KES || fallbackRates.KES,
+            // Fallback for AEF since API uses XAF (Central African CFA) or XOF (West African CFA)
+            AEF: data.conversion_rates.XAF || data.conversion_rates.XOF || fallbackRates.AEF,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch live API currency exchange rates:", error);
+      }
+    }
+    fetchLiveRates();
+  }, []);
 
   // Initialize from LocalStorage safely on the client
   useEffect(() => {
@@ -102,7 +128,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const cartTotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   const formatPrice = (priceInNgn: number) => {
-    const converted = priceInNgn * exchangeRates[currency];
+    const rate = liveRates[currency] || fallbackRates[currency] || 1;
+    const converted = priceInNgn * rate;
     return `${currencySymbols[currency]}${converted.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   };
 
