@@ -10,7 +10,7 @@ export default async function PhysicalProductsPage() {
   
   const { data: products, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_variants(*)')
     .eq('type', 'Physical'); 
 
   if (error) {

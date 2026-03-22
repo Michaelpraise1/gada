@@ -10,16 +10,32 @@ interface ProductCardProps {
   actual_price_ngn?: number;
   discount_price_ngn?: number;
   images?: string;
+  has_variants?: boolean;
+  product_variants?: any[];
 }
 
 export default function ProductCard({
   id = "",
   name = "Becoming mitchell obama",
-  actual_price_ngn = 200,
-  discount_price_ngn = 200,
-  images = ""
+  actual_price_ngn = 0,
+  discount_price_ngn = 0,
+  images = "",
+  has_variants = false,
+  product_variants = []
 }: ProductCardProps) {
   const { formatPrice } = useCart();
+
+  // Dynamically resolve the absolute lowest variant price if a product has sub-options (e.g., sizes, colors)
+  let displayActual: number = actual_price_ngn;
+  let displayDiscount: number | undefined = discount_price_ngn;
+
+  if (has_variants && product_variants && product_variants.length > 0) {
+    const validVariants = product_variants.map(v => v.actual_price_ngn || v.price || v.amount || 0).filter(p => p > 0);
+    if (validVariants.length > 0) {
+      displayActual = Math.min(...validVariants);
+      displayDiscount = undefined; // Drop static discount crossover if we show "Starting At" variant price
+    }
+  }
 
   // Gracefully handle strings, empty whitespace strings, or database arrays
   const parsedImage = Array.isArray(images) ? images[0] : images;
@@ -47,12 +63,15 @@ export default function ProductCard({
           {name}
         </h3>
         <div className="flex items-center gap-2">
+          {has_variants && product_variants && product_variants.length > 0 && (
+            <span className="text-[12px] text-gray-500 font-medium mr-[-4px]">From</span>
+          )}
           <span className="text-[15px] font-bold text-gray-900">
-            {formatPrice(actual_price_ngn)}
+            {formatPrice(displayActual)}
           </span>
-          {discount_price_ngn && (
+          {displayDiscount && displayDiscount > 0 && (
             <span className="text-[13px] text-gray-400 line-through">
-              {formatPrice(discount_price_ngn)}
+              {formatPrice(displayDiscount)}
             </span>
           )}
         </div>

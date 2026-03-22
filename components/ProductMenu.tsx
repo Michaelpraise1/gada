@@ -17,6 +17,8 @@ interface Product {
   createdAt?: string;
   updatedAt?: string;
   href?: string;
+  has_variants?: boolean;
+  product_variants?: any[];
 }
 
 interface ProductMenuProps {
@@ -50,6 +52,8 @@ const ProductMenu = ({ products }: ProductMenuProps) => {
               discount_price_ngn={product.discount_price_ngn}
               actual_price_ngn={product.actual_price_ngn}
               images={product.images}
+              has_variants={product.has_variants}
+              product_variants={product.product_variants}
             />
           ))}
         </div>

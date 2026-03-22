@@ -51,14 +51,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
   const [liveRates, setLiveRates] = useState<Record<Currency, number>>(fallbackRates);
 
-  // Poll exactly once on mount to get the blazing-fast live rates
+  // Poll exactly once on mount to get the blazing-fast live rates, cached for 4 hours to protect API limits
   useEffect(() => {
     async function fetchLiveRates() {
       try {
+        // 1. Check if we have securely cached rates that are less than 4 hours old
+        const cachedRatesStr = localStorage.getItem('exchangeRatesCache');
+        if (cachedRatesStr) {
+          const cache = JSON.parse(cachedRatesStr);
+          const fourHoursInMs = 4 * 60 * 60 * 1000;
+          
+          if (Date.now() - cache.timestamp < fourHoursInMs) {
+            setLiveRates(cache.rates);
+            return; // Exit securely early, rendering from fast cache instead of network!
+          }
+        }
+
+        // 2. Cache expired or empty -> Network Fetch
         const response = await fetch('https://v6.exchangerate-api.com/v6/b7b496a8a418a2048c4060fc/latest/NGN');
         const data = await response.json();
+        
         if (data && data.result === "success" && data.conversion_rates) {
-          setLiveRates({
+          const newRates = {
             NGN: data.conversion_rates.NGN || 1,
             USD: data.conversion_rates.USD || fallbackRates.USD,
             GBP: data.conversion_rates.GBP || fallbackRates.GBP,
@@ -67,13 +81,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             KES: data.conversion_rates.KES || fallbackRates.KES,
             // Fallback for AEF since API uses XAF (Central African CFA) or XOF (West African CFA)
             AEF: data.conversion_rates.XAF || data.conversion_rates.XOF || fallbackRates.AEF,
-          });
+          };
+
+          setLiveRates(newRates);
+
+          // 3. Save the brand new rates directly to LocalStorage timestamped
+          localStorage.setItem('exchangeRatesCache', JSON.stringify({
+            timestamp: Date.now(),
+            rates: newRates
+          }));
         }
       } catch (error) {
         console.error("Failed to fetch live API currency exchange rates:", error);
       }
     }
-    fetchLiveRates();
+    
+    // Ensure we only try touching localStorage on the browser natively
+    if (typeof window !== 'undefined') {
+      fetchLiveRates();
+    }
   }, []);
 
   // Initialize from LocalStorage safely on the client

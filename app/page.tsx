@@ -29,8 +29,8 @@ export default async function Home() {
   const title = business?.title || business?.name || business?.business_name || "Daniels Place";
   const description = business?.description || "Discover a variety of products tailored to your needs. Shop digital goods, exclusive services, and more. Seamless browsing and secure checkout guaranteed.";
 
-  // Fetch the dynamic products
-  const { data: products, error } = await supabase.from('products').select('*');
+  // Fetch the dynamic products including relational variants natively to stop 0 value crashes
+  const { data: products, error } = await supabase.from('products').select('*, product_variants(*)');
 
   if (error) {
     console.error('Supabase Error Code:', error.code);

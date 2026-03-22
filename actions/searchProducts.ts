@@ -8,7 +8,7 @@ export async function searchProductsAction(query: string) {
   
   const { data, error } = await supabase
     .from('products')
-    .select('id, name, actual_price_ngn, discount_price_ngn, images')
+    .select('id, name, actual_price_ngn, discount_price_ngn, images, has_variants, product_variants(*)')
     .ilike('name', `%${query}%`)
     .limit(5);
 

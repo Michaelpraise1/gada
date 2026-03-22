@@ -5,10 +5,10 @@ import { createClient } from '@/utils/supabase/server';
 export default async function MightLike() {
   const supabase = await createClient();
   
-  // Fetch up to 4 recommended products organically from Supabase
+  // Fetch up to 4 recommended products organically from Supabase including child variants
   const { data: recommendedProducts, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_variants(*)')
     .limit(4);
 
   if (error) {
@@ -34,6 +34,8 @@ export default async function MightLike() {
             actual_price_ngn={product.actual_price_ngn}
             discount_price_ngn={product.discount_price_ngn}
             images={product.images} 
+            has_variants={product.has_variants}
+            product_variants={product.product_variants}
           />
         ))}
       </div>

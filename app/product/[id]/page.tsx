@@ -17,10 +17,10 @@ export default async function DynamicProductPage({ params }: Props) {
   // Securely initialize Server-Side Supabase client
   const supabase = await createClient();
   
-  // Fetch the solitary product whose 'id' exactly matches the URL segment
+  // Fetch the solitary product whose 'id' exactly matches the URL segment including child variants
   const { data: product, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_variants(*)')
     .eq('id', id)
     .single();
 
@@ -34,11 +34,20 @@ export default async function DynamicProductPage({ params }: Props) {
   const parsedImage = Array.isArray(product.images) ? product.images[0] : product.images;
   const finalImageUrl = typeof parsedImage === 'string' && parsedImage.trim().length > 0 ? parsedImage : undefined;
 
+  // Dynamically resolve baseline actual price evaluating variant matrices securely
+  let resolvedPrice = product.actual_price_ngn || 0;
+  if (product.has_variants && product.product_variants && product.product_variants.length > 0) {
+    const validVariants = product.product_variants.map((v: any) => v.actual_price_ngn || v.price || v.amount || 0).filter((p: number) => p > 0);
+    if (validVariants.length > 0) {
+      resolvedPrice = Math.min(...validVariants);
+    }
+  }
+
   return (
     <Container>
       <ProductPage 
         title={product.name}
-        price={product.actual_price_ngn}
+        price={resolvedPrice}
         description={product.description}
         imageUrl={finalImageUrl}
       />

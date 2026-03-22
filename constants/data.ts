@@ -30,7 +30,7 @@ export interface Product {
 export async function getProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_variants(*)')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -48,7 +48,7 @@ export async function getProducts(): Promise<Product[]> {
 export async function getProductById(id: string): Promise<Product | null> {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_variants(*)')
     .eq('id', id)
     .single();
 
@@ -67,7 +67,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 export async function getRecommendedProducts(limit: number = 4): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_variants(*)')
     .limit(limit);
 
   if (error) {
