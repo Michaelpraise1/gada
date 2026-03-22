@@ -13,7 +13,7 @@ export default function CartPage() {
 
 
   return (
-    <Container className='w-1/2 overflow-hidden flex flex-col items-right'>
+    <Container className='lg:w-1/2 w-fulloverflow-hidden flex flex-col items-right'>
       {/* // <div className="flex flex-col h-screen w-full bg-white font-sans max-w-md mx-auto relative overflow-hidden"> */}
       {/* Header */}
       <div className="flex items-center justify-between p-6">
@@ -119,7 +119,7 @@ export default function CartPage() {
             <span className="text-[14px] text-gray-600">Subtotal</span>
             <span className="text-[15px] text-gray-900 font-bold">{formatPrice(cartTotal)}</span>
           </div>
-          <button 
+          <button
             onClick={() => router.push('/checkout')}
             className="w-full py-4 bg-[#6A42E4] hover:bg-[#5833cc] text-white rounded-[14px] text-[14.5px] font-medium transition-colors shadow-sm">
             Checkout

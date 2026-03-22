@@ -29,7 +29,7 @@ const ProductMenu = ({ products }: ProductMenuProps) => {
   return (
     <div className="w-full flex flex-col">
       {/* Category Links Menu */}
-      <div className='md:inline-flex w-full items-center px-8 gap-7 sm:gap-3 text-sm capitalize font-semibold text-lightcolor'>
+      <div className='flex flex-wrap w-full items-center px-8 gap-5 md:gap-7 text-sm capitalize font-semibold text-lightcolor'>
         {productCategories?.map((item) => (
           <Link key={item?.title} href={item?.href} className={`hover:text-primary-bg relative group ${pathname === item?.href && "text-primary-bg"}`}>
             {item?.title}
@@ -41,7 +41,7 @@ const ProductMenu = ({ products }: ProductMenuProps) => {
 
       {/* Dynamically Mapped Products Array */}
       {products && products.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10 px-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10 px-3 place-items-center sm:place-items-stretch">
           {products.map((product) => (
             <ProductCard
               key={product.id}
