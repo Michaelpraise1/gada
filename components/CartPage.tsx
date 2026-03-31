@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ShoppingCart, X, Minus, Plus, Trash2 } from 'lucide-react';
-import { useCart } from './CartContext';
+import { useCart } from '@/components/CartContext';
 import { useRouter } from 'next/navigation';
 import Container from './Container';
 

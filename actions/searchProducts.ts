@@ -10,7 +10,7 @@ export async function searchProductsAction(query: string) {
     .from('products')
     .select('id, name, actual_price_ngn, discount_price_ngn, images, has_variants, product_variants(*)')
     .ilike('name', `%${query}%`)
-    .limit(5);
+    .order('name', { ascending: true }); // Ensure consistent sorting from all results
 
   if (error) {
     console.error("Search Action Error:", error);

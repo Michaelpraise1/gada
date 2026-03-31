@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from './CartContext';
+import { useCart } from '@/components/CartContext';
 import { searchProductsAction } from '@/actions/searchProducts';
 
 const SearchBar = () => {

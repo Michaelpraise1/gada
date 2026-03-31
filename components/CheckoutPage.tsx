@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, X, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCart } from './CartContext';
+import { useCart } from '@/components/CartContext';
 
 const countryCodes = [
   { code: 'NG', dialCode: '+234', flag: '🇳🇬' },

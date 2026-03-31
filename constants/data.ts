@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabase';
 
 export const productCategories = [
   { title: "All", href: "/" },
-  { title: "Physical products", href: "/product/Physical", type: "Physical" },
-  { title: "Digital products", href: "/product/Digital", type: "Digital" },
+  { title: "Physical Products", href: "/product/Physical", type: "Physical" },
+  { title: "Digital Products", href: "/product/Digital", type: "Digital" },
 ];
 
 

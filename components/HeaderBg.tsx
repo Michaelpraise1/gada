@@ -8,7 +8,7 @@ interface Props {
 
 const HeaderBg = ({ imageUrl = "/headerbg.png" }: Props) => {
   return (
-    <div className="relative w-full max-w-7xl mx-auto h-[25vh] sm:h-[35vh]">
+    <div className="relative w-full max-w-full mx-auto h-[25vh] sm:h-[35vh]">
       <Image
         src={imageUrl}
         alt="Header Background"

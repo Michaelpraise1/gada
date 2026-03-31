@@ -8,7 +8,8 @@ import { usePathname } from 'next/navigation'
 
 const Header = () => {
   const pathname = usePathname();
-  const isHome = pathname === '/';
+  // Ensure we identify all primary marketing pages that use the Hero / HeaderBg layout for a consistent transparent UI
+  const isHome = pathname === '/' || pathname === '/product/Physical' || pathname === '/product/Digital';
 
   return (
     <header className={`${isHome ? 'absolute top-0 left-0 w-full z-50 bg-transparent' : 'w-full bg-white relative'} py-3`}>

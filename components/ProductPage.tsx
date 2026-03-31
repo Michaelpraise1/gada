@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShoppingCart, Share } from 'lucide-react';
-import { useCart } from './CartContext';
+import { useCart } from '@/components/CartContext';
 
 interface ProductPageProps {
   id?: string | number;

@@ -2,7 +2,7 @@
 import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
-import { useCart } from './CartContext';
+import { useCart } from '@/components/CartContext';
 
 const CartIcon = () => {
   const { cartCount } = useCart();

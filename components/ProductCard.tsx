@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from './CartContext';
+import { useCart } from '@/components/CartContext';
 
 interface ProductCardProps {
   id?: string | number;
@@ -25,15 +25,20 @@ export default function ProductCard({
 }: ProductCardProps) {
   const { formatPrice } = useCart();
 
-  // Dynamically resolve the absolute lowest variant price if a product has sub-options (e.g., sizes, colors)
-  let displayActual: number = actual_price_ngn;
+  // Dynamically resolve the absolute lowest and highest variant prices if a product has sub-options
+  let displayMin: number = actual_price_ngn;
+  let displayMax: number = actual_price_ngn;
   let displayDiscount: number | undefined = discount_price_ngn;
 
   if (has_variants && product_variants && product_variants.length > 0) {
-    const validVariants = product_variants.map(v => v.actual_price_ngn || v.price || v.amount || 0).filter(p => p > 0);
-    if (validVariants.length > 0) {
-      displayActual = Math.min(...validVariants);
-      displayDiscount = undefined; // Drop static discount crossover if we show "Starting At" variant price
+    const prices = product_variants
+      .map(v => v.actual_price_ngn || v.price || v.amount || 0)
+      .filter(p => p > 0);
+    
+    if (prices.length > 0) {
+      displayMin = Math.min(...prices);
+      displayMax = Math.max(...prices);
+      displayDiscount = undefined; // Drop static discount if we show a dynamic variant range
     }
   }
 
@@ -62,12 +67,13 @@ export default function ProductCard({
         <h3 className="text-[15px] font-medium text-gray-900 leading-tight mb-1.5">
           {name}
         </h3>
-        <div className="flex items-center gap-2">
-          {has_variants && product_variants && product_variants.length > 0 && (
-            <span className="text-[12px] text-gray-500 font-medium mr-[-4px]">From</span>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-[15px] font-bold text-gray-900">
-            {formatPrice(displayActual)}
+            {displayMin !== displayMax ? (
+              <>From {formatPrice(displayMin)} to {formatPrice(displayMax)}</>
+            ) : (
+              formatPrice(displayMin)
+            )}
           </span>
           {displayDiscount && displayDiscount > 0 && (
             <span className="text-[13px] text-gray-400 line-through">
@@ -77,5 +83,5 @@ export default function ProductCard({
         </div>
       </div>
     </Link>
-  );
+  )
 }

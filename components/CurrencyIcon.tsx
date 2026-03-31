@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from 'lucide-react'
-import { useCart, Currency } from './CartContext'
+import { useCart, Currency } from '@/components/CartContext'
 
 const CurrencyIcon = () => {
   const { currency, setCurrency } = useCart();
@@ -29,7 +29,7 @@ const CurrencyIcon = () => {
           NGN
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => setCurrency("GBP")}>
+        {/* <DropdownMenuItem onClick={() => setCurrency("GBP")}>
           GBP
         </DropdownMenuItem>
 
@@ -47,7 +47,7 @@ const CurrencyIcon = () => {
 
         <DropdownMenuItem onClick={() => setCurrency("AEF")}>
           AEF
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -28,23 +28,39 @@ interface ProductMenuProps {
 const ProductMenu = ({ products }: ProductMenuProps) => {
   const pathname = usePathname();
 
+  // Helper function to calculate the absolute lowest price for accurate sorting across variant matrices
+  const getEffectivePrice = (prod: Product) => {
+    if (prod.has_variants && prod.product_variants && prod.product_variants.length > 0) {
+      const validVariants = prod.product_variants
+        .map(v => v.actual_price_ngn || v.price || v.amount || 0)
+        .filter(p => p > 0);
+      if (validVariants.length > 0) {
+        return Math.min(...validVariants);
+      }
+    }
+    return prod.actual_price_ngn || 0;
+  };
+
+  // Dynamically sort the incoming products array from lowest to highest price ("smallest to biggest")
+  const sortedProducts = products ? [...products].sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b)) : [];
+
   return (
     <div className="w-full flex flex-col">
-      {/* Category Links Menu */}
+      {/* Category Links Menu Row */}
       <div className='flex flex-wrap w-full items-center px-8 gap-5 md:gap-7 text-sm capitalize font-semibold text-lightcolor'>
         {productCategories?.map((item) => (
-          <Link key={item?.title} href={item?.href} className={`hover:text-primary-bg relative group ${pathname === item?.href && "text-primary-bg"}`}>
+          <Link key={item?.title} href={item?.href} className={`hover:text-primary-bg relative group ${pathname === item?.href ? "text-primary-bg" : ""}`}>
             {item?.title}
-            <span className={`absolute -bottom-0.5 left-1/2 w-0 h-0.5 bg-primary-bg group-hover:w-1/2  hoverEffect  group-hover:left-0 ${pathname === item?.href && "text-primary-bg"}`} />
-            <span className={`absolute -bottom-0.5 right-1/2 w-0 h-0.5 bg-primary-bg group-hover:w-1/2  hoverEffect  group-hover:right-0 ${pathname === item?.href && "text-primary-bg"}`} />
+            <span className={`absolute -bottom-0.5 left-1/2 h-0.5 bg-primary-bg hoverEffect group-hover:w-1/2 group-hover:left-0 ${pathname === item?.href ? "w-1/2 left-0" : "w-0"}`} />
+            <span className={`absolute -bottom-0.5 right-1/2 h-0.5 bg-primary-bg hoverEffect group-hover:w-1/2 group-hover:right-0 ${pathname === item?.href ? "w-1/2 right-0" : "w-0"}`} />
           </Link>
         ))}
       </div>
 
-      {/* Dynamically Mapped Products Array */}
-      {products && products.length > 0 && (
+      {/* Dynamically Mapped & Sorted Products Array */}
+      {sortedProducts.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10 px-3 place-items-center sm:place-items-stretch">
-          {products.map((product) => (
+          {sortedProducts.map((product) => (
             <ProductCard
               key={product.id}
               id={product.id}
