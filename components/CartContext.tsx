@@ -25,7 +25,7 @@ export const currencySymbols: Record<Currency, string> = {
 
 export interface CartItem {
   id: string | number;
-  cartEntryId?: number; // Backend cart item ID
+  cartEntryId?: number; 
   name: string;
   price: number;
   quantity: number;
@@ -59,6 +59,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async function syncWithBackend() {
       try {
         const response = await fetch(`${API_BASE_URL}/v1/carts/all`);
+        
+        if (!response.ok) {
+          console.warn(`Backend returned status ${response.status}`);
+          return;
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.warn("Received non-JSON response from backend");
+          return;
+        }
+
         const result = await response.json();
         
         if (result.success && Array.isArray(result.data)) {
@@ -84,20 +96,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function fetchLiveRates() {
       try {
-        // 1. Check if we have securely cached rates that are less than 4 hours old
+        
         const cachedRatesStr = localStorage.getItem('exchangeRatesCache');
         if (cachedRatesStr) {
-          const cache = JSON.parse(cachedRatesStr);
-          const fourHoursInMs = 4 * 60 * 60 * 1000;
-          
-          if (Date.now() - cache.timestamp < fourHoursInMs) {
-            setLiveRates(cache.rates);
-            return; // Exit securely early, rendering from fast cache instead of network!
+          try {
+            const cache = JSON.parse(cachedRatesStr);
+            const fourHoursInMs = 4 * 60 * 60 * 1000;
+            
+            if (Date.now() - cache.timestamp < fourHoursInMs) {
+              setLiveRates(cache.rates);
+              return
+            }
+          } catch (cacheError) {
+            console.warn("Invalid cache data, will fetch fresh rates:", cacheError);
           }
         }
 
-        // 2. Cache expired or empty -> Network Fetch
         const response = await fetch('https://v6.exchangerate-api.com/v6/b7b496a8a418a2048c4060fc/latest/NGN');
+        
+        if (!response.ok) {
+          throw new Error(`API returned status ${response.status}`);
+        }
+
         const data = await response.json();
         
         if (data && data.result === "success" && data.conversion_rates) {
@@ -108,7 +128,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             CAD: data.conversion_rates.CAD || fallbackRates.CAD,
             GHS: data.conversion_rates.GHS || fallbackRates.GHS,
             KES: data.conversion_rates.KES || fallbackRates.KES,
-            // Fallback for AEF since API uses XAF (Central African CFA) or XOF (West African CFA)
+           
             AEF: data.conversion_rates.XAF || data.conversion_rates.XOF || fallbackRates.AEF,
           };
 
@@ -180,12 +200,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           no_items: 1
         })
       });
-      const result = await response.json();
-      if (result.success) {
-        // Update the cartEntryId from backend response
-        setItems(current => current.map(item => 
-          item.id === product.id ? { ...item, cartEntryId: result.data.id } : item
-        ));
+      
+      if (!response.ok) {
+        console.warn(`Backend returned status ${response.status}`);
+        return;
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const result = await response.json();
+        if (result.success) {
+          // Update the cartEntryId from backend response
+          setItems(current => current.map(item => 
+            item.id === product.id ? { ...item, cartEntryId: result.data.id } : item
+          ));
+        }
       }
     } catch (error) {
       console.error("Failed to add item to backend cart:", error);

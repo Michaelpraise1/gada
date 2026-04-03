@@ -34,7 +34,7 @@ export default function ProductCard({
     const prices = product_variants
       .map(v => v.actual_price_ngn || v.price || v.amount || 0)
       .filter(p => p > 0);
-    
+
     if (prices.length > 0) {
       displayMin = Math.min(...prices);
       displayMax = Math.max(...prices);
@@ -47,7 +47,7 @@ export default function ProductCard({
   const hasValidImage = typeof parsedImage === 'string' && parsedImage.trim().length > 0;
 
   return (
-    <Link href={`/product/${id}`} className="flex flex-col gap-3 font-sans w-full max-w-[260px] group cursor-pointer hover:no-underline">
+    <Link href={`/product/${id}`} className="flex flex-col gap-3 font-sans w-full mx-4 max-w-65 group cursor-pointer hover:no-underline">
       {/* Image Container */}
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100">
         {hasValidImage ? (

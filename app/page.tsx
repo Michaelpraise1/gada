@@ -18,14 +18,14 @@ export default async function Home() {
       next: { revalidate: 3600 }
     });
     const storeResult = await storeResponse.json();
-    
-    if (storeResult.success && storeResult.data?.[0]) {
-      const store = storeResult.data[0];
+
+    if (storeResult.success && storeResult.data) {
+      const store = Array.isArray(storeResult.data) ? storeResult.data[0] : storeResult.data;
       title = store.business_name;
       description = store.business_description;
       logoUrl = store.business_logo;
       headerBg = store.business_bg_image;
-      
+
       products = (store.products || []).map((p: any) => ({
         ...p,
         actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),

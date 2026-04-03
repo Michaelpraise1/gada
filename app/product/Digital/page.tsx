@@ -16,8 +16,8 @@ export default async function DigitalProductsPage() {
     const storeResponse = await fetch('https://gada-web-backend.vercel.app/v1/store');
     const storeResult = await storeResponse.json();
 
-    if (storeResult.success && storeResult.data?.[0]) {
-      const store = storeResult.data[0];
+    if (storeResult.success && storeResult.data) {
+      const store = Array.isArray(storeResult.data) ? storeResult.data[0] : storeResult.data;
       title = store.business_name;
       description = store.business_description;
       logoUrl = store.business_logo;
