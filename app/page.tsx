@@ -3,39 +3,38 @@ import HeadLine from '@/components/HeadLine';
 import ProductMenu from '@/components/ProductMenu';
 import SearchBar from '@/components/SearchBar';
 import React from 'react';
-import { createClient } from '@/utils/supabase/server';
 import HeaderBg from '@/components/HeaderBg';
 
 
 export default async function Home() {
-  // Initialize Supabase on the Server side (securely reads cookies + session)
-  const supabase = await createClient();
+  let products = [];
+  let title = "Daniels Place";
+  let description = "Discover a variety of products tailored to your needs.";
+  let logoUrl = "/Logo.png";
+  let headerBg = "/headerbg.png";
 
-  // Fetch the Business profile dynamically without strict .single() to avoid empty table crashes
-  const { data: businessData, error: businessError } = await supabase
-    .from('businesses')
-    .select('*')
-    .limit(1);
-
-  if (businessError) {
-    console.error('Business fetch error:', businessError.message);
-  }
-
-  const business = businessData?.[0] || null;
-
-  // Graceful Universal Fallbacks resolving any potential schema mismatches
-  const headerBg = business?.header_bg_image || business?.banner_url || business?.banner_image || business?.headerBg || "/headerbg.png";
-  const logoUrl = business?.logo_image || business?.logo_url || business?.logo || "/Logo.png";
-  const title = business?.title || business?.name || business?.business_name || "Daniels Place";
-  const description = business?.description || "Discover a variety of products tailored to your needs. Shop digital goods, exclusive services, and more. Seamless browsing and secure checkout guaranteed.";
-
-  // Fetch the dynamic products including relational variants natively to stop 0 value crashes
-  const { data: products, error } = await supabase.from('products').select('*, product_variants(*)');
-
-  if (error) {
-    console.error('Supabase Error Code:', error.code);
-    console.error('Supabase Error Message:', error.message);
-    console.error('Supabase Raw Error:', JSON.stringify(error, null, 2));
+  try {
+    const storeResponse = await fetch('https://gada-web-backend.vercel.app/v1/store', {
+      next: { revalidate: 3600 }
+    });
+    const storeResult = await storeResponse.json();
+    
+    if (storeResult.success && storeResult.data?.[0]) {
+      const store = storeResult.data[0];
+      title = store.business_name;
+      description = store.business_description;
+      logoUrl = store.business_logo;
+      headerBg = store.business_bg_image;
+      
+      products = (store.products || []).map((p: any) => ({
+        ...p,
+        actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),
+        discount_price_ngn: p.discount_price_ngn ? parseFloat(p.discount_price_ngn) : undefined,
+        images: p.images?.[0] || ''
+      }));
+    }
+  } catch (error) {
+    console.error('Error fetching store data from API:', error);
   }
 
   return (

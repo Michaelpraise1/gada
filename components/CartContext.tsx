@@ -25,6 +25,7 @@ export const currencySymbols: Record<Currency, string> = {
 
 export interface CartItem {
   id: string | number;
+  cartEntryId?: number; // Backend cart item ID
   name: string;
   price: number;
   quantity: number;
@@ -50,6 +51,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrencyState] = useState<Currency>('USD');
   const [isMounted, setIsMounted] = useState(false);
   const [liveRates, setLiveRates] = useState<Record<Currency, number>>(fallbackRates);
+
+  const API_BASE_URL = 'https://gada-web-backend.vercel.app';
+
+  // Sync with Backend on mount
+  useEffect(() => {
+    async function syncWithBackend() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/v1/carts/all`);
+        const result = await response.json();
+        
+        if (result.success && Array.isArray(result.data)) {
+          const syncedItems: CartItem[] = result.data.map((entry: any) => ({
+            id: entry.product.id,
+            cartEntryId: entry.id,
+            name: entry.product.name,
+            price: parseFloat(entry.product.discount_price_ngn || entry.product.actual_price_ngn),
+            quantity: entry.no_of_items,
+            image: entry.product.images?.[0]
+          }));
+          setItems(syncedItems);
+        }
+      } catch (error) {
+        console.error("Failed to sync cart with backend:", error);
+      }
+    }
+
+    if (isMounted) syncWithBackend();
+  }, [isMounted]);
 
   // Poll exactly once on mount to get the blazing-fast live rates, cached for 4 hours to protect API limits
   useEffect(() => {
@@ -129,7 +158,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (isMounted) localStorage.setItem('cart', JSON.stringify(items));
   }, [items, isMounted]);
 
-  const addItem = (product: Omit<CartItem, 'quantity'>) => {
+  const addItem = async (product: Omit<CartItem, 'quantity'>) => {
+    // 1. Optimistic Update
     setItems(current => {
       const existing = current.find(item => item.id === product.id);
       if (existing) {
@@ -139,15 +169,51 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...current, { ...product, quantity: 1 }];
     });
+
+    // 2. Sync to Backend
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/carts/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: product.id,
+          no_items: 1
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        // Update the cartEntryId from backend response
+        setItems(current => current.map(item => 
+          item.id === product.id ? { ...item, cartEntryId: result.data.id } : item
+        ));
+      }
+    } catch (error) {
+      console.error("Failed to add item to backend cart:", error);
+    }
   };
 
-  const removeItem = (id: string | number) => {
+  const removeItem = async (id: string | number) => {
+    const itemToRemove = items.find(i => i.id === id);
+    
+    // 1. Optimistic Update
     setItems(current => current.filter(i => i.id !== id));
+
+    // 2. Sync to Backend
+    if (itemToRemove?.cartEntryId) {
+      try {
+        await fetch(`${API_BASE_URL}/v1/carts/delete/${itemToRemove.cartEntryId}`, {
+          method: 'DELETE'
+        });
+      } catch (error) {
+        console.error("Failed to delete item from backend cart:", error);
+      }
+    }
   };
 
   const updateQuantity = (id: string | number, quantity: number) => {
     if (quantity < 1) return;
     setItems(current => current.map(i => i.id === id ? { ...i, quantity } : i));
+    // Note: Backend lacks a direct quantity update, so for now we rely on the next refresh/sync
   };
 
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);

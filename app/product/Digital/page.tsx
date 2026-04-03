@@ -3,40 +3,39 @@ import HeadLine from '@/components/HeadLine';
 import ProductMenu from '@/components/ProductMenu';
 import SearchBar from '@/components/SearchBar';
 import React from 'react';
-import { createClient } from '@/utils/supabase/server';
 import HeaderBg from '@/components/HeaderBg';
 
 export default async function DigitalProductsPage() {
-  const supabase = await createClient();
+  let products = [];
+  let title = "Daniels Place";
+  let description = "Discover a variety of products tailored to your needs.";
+  let logoUrl = "/Logo.png";
+  let headerBg = "/headerbg.png";
 
-  // Fetch the Business profile
-  const { data: businessData, error: businessError } = await supabase
-    .from('businesses')
-    .select('*')
-    .limit(1);
+  try {
+    const storeResponse = await fetch('https://gada-web-backend.vercel.app/v1/store');
+    const storeResult = await storeResponse.json();
 
-  if (businessError) {
-    console.error('Business fetch error:', businessError.message);
+    if (storeResult.success && storeResult.data?.[0]) {
+      const store = storeResult.data[0];
+      title = store.business_name;
+      description = store.business_description;
+      logoUrl = store.business_logo;
+      headerBg = store.business_bg_image;
+
+      // Map products from the store object or separate endpoint
+      products = (store.products || [])
+        .filter((p: any) => p.type === 'Digital')
+        .map((p: any) => ({
+          ...p,
+          actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),
+          discount_price_ngn: p.discount_price_ngn ? parseFloat(p.discount_price_ngn) : undefined,
+          images: p.images?.[0] || ''
+        }));
+    }
+  } catch (error) {
+    console.error('Error fetching store/products from API:', error);
   }
-
-  const business = businessData?.[0] || null;
-
-  // Universal Fallbacks
-  const headerBg = business?.header_bg_image || business?.banner_url || business?.banner_image || business?.headerBg || "/headerbg.png";
-  const logoUrl = business?.logo_image || business?.logo_url || business?.logo || "/Logo.png";
-  const title = business?.title || business?.name || business?.business_name || "Daniels Place";
-  const description = business?.description || "Discover a variety of products tailored to your needs. Shop digital goods, exclusive services, and more. Seamless browsing and secure checkout guaranteed.";
-
-  const { data: allProducts, error } = await supabase
-    .from('products')
-    .select('*, product_variants(*)'); 
-
-  if (error) {
-    console.error('Error fetching digital products:', error);
-  }
-
-  // Filter products in JavaScript "from all" results
-  const products = allProducts?.filter(p => p.type === 'Digital') || [];
 
   return (
     <Container>
