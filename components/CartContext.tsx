@@ -59,18 +59,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async function syncWithBackend() {
       try {
         const response = await fetch(`${API_BASE_URL}/v1/carts/all`);
-        
         if (!response.ok) {
-          console.warn(`Backend returned status ${response.status}`);
+          console.warn(`Cart sync skipped: backend returned ${response.status}`);
           return;
         }
-
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          console.warn("Received non-JSON response from backend");
-          return;
-        }
-
         const result = await response.json();
         
         if (result.success && Array.isArray(result.data)) {
@@ -200,21 +192,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           no_items: 1
         })
       });
-      
       if (!response.ok) {
-        console.warn(`Backend returned status ${response.status}`);
+        console.warn(`Cart add skipped: backend returned ${response.status}`);
         return;
       }
-
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        const result = await response.json();
-        if (result.success) {
-          // Update the cartEntryId from backend response
-          setItems(current => current.map(item => 
-            item.id === product.id ? { ...item, cartEntryId: result.data.id } : item
-          ));
-        }
+      const result = await response.json();
+      if (result.success) {
+        // Update the cartEntryId from backend response
+        setItems(current => current.map(item => 
+          item.id === product.id ? { ...item, cartEntryId: result.data.id } : item
+        ));
       }
     } catch (error) {
       console.error("Failed to add item to backend cart:", error);
@@ -230,9 +217,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     // 2. Sync to Backend
     if (itemToRemove?.cartEntryId) {
       try {
-        await fetch(`${API_BASE_URL}/v1/carts/delete/${itemToRemove.cartEntryId}`, {
+        const res = await fetch(`${API_BASE_URL}/v1/carts/delete/${itemToRemove.cartEntryId}`, {
           method: 'DELETE'
         });
+        if (!res.ok) {
+          console.warn(`Cart delete skipped: backend returned ${res.status}`);
+        }
       } catch (error) {
         console.error("Failed to delete item from backend cart:", error);
       }

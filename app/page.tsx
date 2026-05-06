@@ -14,10 +14,16 @@ export default async function Home() {
   let headerBg = "/headerbg.png";
 
   try {
-    const storeResponse = await fetch('https://gada-web-backend.vercel.app/v1/store', {
-      next: { revalidate: 3600 }
-    });
-    const storeResult = await storeResponse.json();
+    // Fetch store info and all products in parallel
+    const [storeResponse, productsResponse] = await Promise.all([
+      fetch('https://gada-web-backend.vercel.app/v1/store', { next: { revalidate: 60 } }),
+      fetch('https://gada-web-backend.vercel.app/v1/products', { next: { revalidate: 60 } }),
+    ]);
+
+    const [storeResult, productsResult] = await Promise.all([
+      storeResponse.json(),
+      productsResponse.json(),
+    ]);
 
     if (storeResult.success && storeResult.data) {
       const store = Array.isArray(storeResult.data) ? storeResult.data[0] : storeResult.data;
@@ -25,13 +31,17 @@ export default async function Home() {
       description = store.business_description;
       logoUrl = store.business_logo;
       headerBg = store.business_bg_image;
+    }
 
-      products = (store.products || []).map((p: any) => ({
-        ...p,
-        actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),
-        discount_price_ngn: p.discount_price_ngn ? parseFloat(p.discount_price_ngn) : undefined,
-        images: p.images?.[0] || ''
-      }));
+    if (productsResult.success && Array.isArray(productsResult.data)) {
+      products = productsResult.data
+        .filter((p: any) => p.status === 'Active')
+        .map((p: any) => ({
+          ...p,
+          actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),
+          discount_price_ngn: p.discount_price_ngn ? parseFloat(p.discount_price_ngn) : undefined,
+          images: p.images?.[0] || ''
+        }));
     }
   } catch (error) {
     console.error('Error fetching store data from API:', error);

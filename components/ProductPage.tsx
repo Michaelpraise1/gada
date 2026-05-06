@@ -90,7 +90,7 @@ export default function ProductPage({
                   addItem({ id: id || title, name: title, price: price, image: imageUrl });
                   router.push('/cart');
                 }}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-[#754DEB] hover:bg-[#623bc9] text-white rounded-[14px] font-medium transition-colors shadow-sm">
+                className="w-full flex items-center justify-center gap-2 py-4 bg-[#754DEB] hover:bg-[#623bc9] text-white rounded-[14px] font-medium transition-transform duration-200 active:scale-95 shadow-sm">
                 <ShoppingCart className="w-5 h-5 stroke-[2]" />
                 Add to cart
               </button>
