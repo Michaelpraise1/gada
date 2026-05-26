@@ -47,9 +47,9 @@ const ProductMenu = ({ products }: ProductMenuProps) => {
   return (
     <div className="w-full flex flex-col">
       {/* Category Links Menu Row */}
-      <div className='flex flex-wrap w-full items-center px-8 gap-5 md:gap-7 text-sm capitalize font-semibold text-lightcolor'>
+      <div className='flex flex-wrap justify-center w-full items-center px-8 gap-7 md:gap-7 text-sm capitalize font-semibold text-lightcolor'>
         {productCategories?.map((item) => (
-          <Link key={item?.title} href={item?.href} className={`hover:text-primary-bg relative group ${pathname === item?.href ? "text-primary-bg" : ""}`}>
+          <Link  key={item?.title} href={item?.href} className={`hover:text-primary-bg  relative group ${pathname === item?.href ? "text-primary-bg" : ""}`}>
             {item?.title}
             <span className={`absolute -bottom-0.5 left-1/2 h-0.5 bg-primary-bg hoverEffect group-hover:w-1/2 group-hover:left-0 ${pathname === item?.href ? "w-1/2 left-0" : "w-0"}`} />
             <span className={`absolute -bottom-0.5 right-1/2 h-0.5 bg-primary-bg hoverEffect group-hover:w-1/2 group-hover:right-0 ${pathname === item?.href ? "w-1/2 right-0" : "w-0"}`} />

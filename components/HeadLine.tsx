@@ -15,8 +15,8 @@ const HeadLine = ({
   logoUrl = "/Logo.png"
 }: Props) => {
   return (
-    <div className="flex flex-col items-start justify-center max-w-3xl mx-auto pb-10 px-1 ml-2 relative z-10">
-      <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] relative mb-4 -mt-12 sm:-mt-16 border-[4px] border-white rounded-full bg-white shadow-sm shrink-0">
+    <div className="flex flex-col items-center justify-center max-w-full mx-auto pb-10 px-1 ml-2 relative z-10">
+      <div className=" h-[100px] sm:w-[120px] sm:h-[120px] relative mb-4 -mt-12 sm:-mt-16 border-[4px] border-white rounded-full bg-white shadow-sm shrink-0">
         <Image
           src={logoUrl}
           alt={title}
@@ -26,11 +26,11 @@ const HeadLine = ({
         />
       </div>
 
-      <Title className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-foreground text-left">
+      <Title className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-foreground text-center">
         {title}
       </Title>
 
-      <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-2xl text-left">
+      <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-2xl text-center">
         {description}
       </p>
       <SocialMedia className='mt-3'/>

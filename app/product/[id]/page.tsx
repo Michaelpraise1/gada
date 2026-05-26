@@ -19,11 +19,17 @@ export default async function DynamicProductPage({ params }: Props) {
     const response = await fetch(
       'https://gada-web-backend.vercel.app/v1/products',
       { next: { revalidate: 60 } }
-    );
-    const result = await response.json();
+    ).catch(err => {
+      console.error('Product details fetch failed:', err);
+      return null;
+    });
 
-    if (result.success && Array.isArray(result.data)) {
-      product = result.data.find((p: any) => p.id === id) ?? null;
+    if (response && response.ok && response.headers.get("content-type")?.includes("application/json")) {
+      const result = await response.json();
+
+      if (result.success && Array.isArray(result.data)) {
+        product = result.data.find((p: any) => p.id === id) ?? null;
+      }
     }
   } catch (err) {
     console.error(`Error fetching products from API:`, err);

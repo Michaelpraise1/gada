@@ -8,19 +8,25 @@ export default async function MightLike() {
     const response = await fetch(
       'https://gada-web-backend.vercel.app/v1/products',
       { next: { revalidate: 60 } }
-    );
-    const result = await response.json();
+    ).catch(err => {
+      console.error('Recommended products fetch failed:', err);
+      return null;
+    });
 
-    if (result.success && Array.isArray(result.data)) {
-      recommendedProducts = result.data
-        .filter((p: any) => p.status === 'Active')
-        .slice(0, 4)
-        .map((p: any) => ({
-          ...p,
-          actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),
-          discount_price_ngn: p.discount_price_ngn ? parseFloat(p.discount_price_ngn) : undefined,
-          images: p.images?.[0] || ''
-        }));
+    if (response && response.ok && response.headers.get("content-type")?.includes("application/json")) {
+      const result = await response.json();
+
+      if (result.success && Array.isArray(result.data)) {
+        recommendedProducts = result.data
+          .filter((p: any) => p.status === 'Active')
+          .slice(0, 4)
+          .map((p: any) => ({
+            ...p,
+            actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),
+            discount_price_ngn: p.discount_price_ngn ? parseFloat(p.discount_price_ngn) : undefined,
+            images: p.images?.[0] || ''
+          }));
+      }
     }
   } catch (error) {
     console.error('Error fetching recommended products:', error);

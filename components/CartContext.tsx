@@ -60,7 +60,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       try {
         const response = await fetch(`${API_BASE_URL}/v1/carts/all`);
         if (!response.ok) {
-          console.warn(`Cart sync skipped: backend returned ${response.status}`);
+          console.warn(`Cart sync skipped: backend returned status ${response.status}`);
+          return;
+        }
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.warn("Received non-JSON response from backend during cart sync");
           return;
         }
         const result = await response.json();
@@ -108,6 +113,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         
         if (!response.ok) {
           throw new Error(`API returned status ${response.status}`);
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Received non-JSON response from exchange rate API");
         }
 
         const data = await response.json();
@@ -193,7 +203,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         })
       });
       if (!response.ok) {
-        console.warn(`Cart add skipped: backend returned ${response.status}`);
+        console.warn(`Cart add skipped: backend returned status ${response.status}`);
+        return;
+      }
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.warn("Received non-JSON response from backend during cart add");
         return;
       }
       const result = await response.json();
@@ -217,12 +232,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     // 2. Sync to Backend
     if (itemToRemove?.cartEntryId) {
       try {
-        const res = await fetch(`${API_BASE_URL}/v1/carts/delete/${itemToRemove.cartEntryId}`, {
+        await fetch(`${API_BASE_URL}/v1/carts/delete/${itemToRemove.cartEntryId}`, {
           method: 'DELETE'
         });
-        if (!res.ok) {
-          console.warn(`Cart delete skipped: backend returned ${res.status}`);
-        }
       } catch (error) {
         console.error("Failed to delete item from backend cart:", error);
       }

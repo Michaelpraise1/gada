@@ -1,7 +1,7 @@
 import Container from '@/components/Container'
 import HeadLine from '@/components/HeadLine';
 import ProductMenu from '@/components/ProductMenu';
-import SearchBar from '@/components/SearchBar';
+// import SearchBar from '@/components/SearchBar';
 import React from 'react';
 import HeaderBg from '@/components/HeaderBg';
 
@@ -15,16 +15,27 @@ export default async function PhysicalProductsPage() {
   try {
     // Fetch store info and products in parallel
     const [storeResponse, productsResponse] = await Promise.all([
-      fetch('https://gada-web-backend.vercel.app/v1/store', { next: { revalidate: 60 } }),
-      fetch('https://gada-web-backend.vercel.app/v1/products', { next: { revalidate: 60 } }),
+      fetch('https://gada-web-backend.vercel.app/v1/store', { next: { revalidate: 60 } }).catch(err => {
+        console.error('Store fetch failed:', err);
+        return null;
+      }),
+      fetch('https://gada-web-backend.vercel.app/v1/products', { next: { revalidate: 60 } }).catch(err => {
+        console.error('Products fetch failed:', err);
+        return null;
+      }),
     ]);
 
-    const [storeResult, productsResult] = await Promise.all([
-      storeResponse.json(),
-      productsResponse.json(),
-    ]);
+    let storeResult: any = null;
+    let productsResult: any = null;
 
-    if (storeResult.success && storeResult.data) {
+    if (storeResponse && storeResponse.ok && storeResponse.headers.get("content-type")?.includes("application/json")) {
+      storeResult = await storeResponse.json();
+    }
+    if (productsResponse && productsResponse.ok && productsResponse.headers.get("content-type")?.includes("application/json")) {
+      productsResult = await productsResponse.json();
+    }
+
+    if (storeResult && storeResult.success && storeResult.data) {
       const store = Array.isArray(storeResult.data) ? storeResult.data[0] : storeResult.data;
       title = store.business_name;
       description = store.business_description;
@@ -32,7 +43,7 @@ export default async function PhysicalProductsPage() {
       headerBg = store.business_bg_image;
     }
 
-    if (productsResult.success && Array.isArray(productsResult.data)) {
+    if (productsResult && productsResult.success && Array.isArray(productsResult.data)) {
       products = productsResult.data
         .filter((p: any) => p.type === 'Physical' && p.status === 'Active')
         .map((p: any) => ({
@@ -49,10 +60,10 @@ export default async function PhysicalProductsPage() {
   return (
     <Container>
       <HeaderBg imageUrl={headerBg} />
-      <div className='flex items-center px-3'>
+      {/* <div className='flex items-center px-3'> */}
         <HeadLine title={title} description={description} logoUrl={logoUrl} />
-        <SearchBar />
-      </div>
+        {/* <SearchBar />
+      </div> */}
       
       <ProductMenu products={products} />
       

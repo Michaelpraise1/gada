@@ -2,9 +2,10 @@ import { supabase } from '../lib/supabase';
 
 
 export const productCategories = [
-  { title: "All", href: "/" },
+  { title: "All Products", href: "/" },
   { title: "Physical Products", href: "/product/Physical", type: "Physical" },
   { title: "Digital Products", href: "/product/Digital", type: "Digital" },
+   { title: "Services", href: "/product/Services", type: "Services" }
 ];
 
 
