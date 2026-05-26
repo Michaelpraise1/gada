@@ -47,7 +47,7 @@ export default function ProductCard({
   const hasValidImage = typeof parsedImage === 'string' && parsedImage.trim().length > 0;
 
   return (
-    <Link href={`/product/${id}`} className="flex flex-col gap-3 font-sans w-300px h-294px mx-4 max-w-65 group cursor-pointer hover:no-underline active:scale-[0.98] transition-transform duration-200">
+    <Link href={`/product/${id}`} className="flex flex-col gap-3 font-sans w-full max-w-[280px] sm:max-w-none mx-auto group cursor-pointer hover:no-underline active:scale-[0.98] transition-transform duration-200">
       {/* Image Container */}
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100">
         {hasValidImage ? (

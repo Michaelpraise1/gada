@@ -2,26 +2,65 @@ import Container from '@/components/Container';
 import HeaderBg from '@/components/HeaderBg';
 import HeadLine from '@/components/HeadLine';
 import ProductMenu from '@/components/ProductMenu';
-import React from 'react'
+import React from 'react';
 
-const page = () => {
-  let Products = [];
+export default async function ServicesProductsPage() {
+  let products = [];
   let title = "Daniels Place";
   let description = "Discover a variety of products tailored to your needs.";
   let logoUrl = "/Logo.png";
   let headerBg = "/headerbg.png";
+
+  try {
+    // Fetch store info and products in parallel
+    const [storeResponse, productsResponse] = await Promise.all([
+      fetch('https://gada-web-backend.vercel.app/v1/store', { next: { revalidate: 60 } }).catch(err => {
+        console.error('Store fetch failed:', err);
+        return null;
+      }),
+      fetch('https://gada-web-backend.vercel.app/v1/products', { next: { revalidate: 60 } }).catch(err => {
+        console.error('Products fetch failed:', err);
+        return null;
+      }),
+    ]);
+
+    let storeResult: any = null;
+    let productsResult: any = null;
+
+    if (storeResponse && storeResponse.ok && storeResponse.headers.get("content-type")?.includes("application/json")) {
+      storeResult = await storeResponse.json();
+    }
+    if (productsResponse && productsResponse.ok && productsResponse.headers.get("content-type")?.includes("application/json")) {
+      productsResult = await productsResponse.json();
+    }
+
+    if (storeResult && storeResult.success && storeResult.data) {
+      const store = Array.isArray(storeResult.data) ? storeResult.data[0] : storeResult.data;
+      title = store.business_name;
+      description = store.business_description;
+      logoUrl = store.business_logo;
+      headerBg = store.business_bg_image;
+    }
+
+    if (productsResult && productsResult.success && Array.isArray(productsResult.data)) {
+      products = productsResult.data
+        .filter((p: any) => p.type === 'Services' && p.status === 'Active')
+        .map((p: any) => ({
+          ...p,
+          actual_price_ngn: parseFloat(p.actual_price_ngn || '0'),
+          discount_price_ngn: p.discount_price_ngn ? parseFloat(p.discount_price_ngn) : undefined,
+          images: p.images?.[0] || ''
+        }));
+    }
+  } catch (error) {
+    console.error('Error fetching store/products from API:', error);
+  }
+
   return (
     <Container>
       <HeaderBg imageUrl={headerBg} />
-      {/* <div className='flex items-center px-3'> */}
       <HeadLine title={title} description={description} logoUrl={logoUrl} />
-      {/* <SearchBar />
-      </div> */}
-
-      <ProductMenu />
-
+      <ProductMenu products={products} />
     </Container>
-  )
+  );
 }
-
-export default page;
